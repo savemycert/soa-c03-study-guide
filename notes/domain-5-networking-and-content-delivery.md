@@ -11,12 +11,12 @@ This domain asks you to build VPC networking correctly, connect networks private
 - **NAT gateway:** managed and zonal. It lives in a public subnet with an Elastic IP and allows outbound-initiated traffic only. Use one per AZ, with each private subnet routing to its local NAT. A NAT instance is the self-managed distractor.
 - **IPv6:** addresses are public and there is no NAT. Outbound-only traffic uses an **egress-only internet gateway** (`::/0`).
 
-| | Security group | Network ACL |
-|---|---|---|
-| Scope | Network interface | Subnet |
-| State | Stateful | Stateless |
-| Rules | Allow only, evaluated together | Allow and deny, lowest number first |
-| Default | Deny in, allow out | Default NACL allows all; custom NACL denies all |
+|         | Security group                 | Network ACL                                     |
+| ------- | ------------------------------ | ----------------------------------------------- |
+| Scope   | Network interface              | Subnet                                          |
+| State   | Stateful                       | Stateless                                       |
+| Rules   | Allow only, evaluated together | Allow and deny, lowest number first             |
+| Default | Deny in, allow out             | Default NACL allows all; custom NACL denies all |
 
 - NACLs need return rules for **ephemeral ports** (commonly 1024-65535). Use security groups for workload rules and NACLs for subnet-wide blocks such as a hostile CIDR.
 - **Endpoints:**
@@ -31,12 +31,12 @@ This domain asks you to build VPC networking correctly, connect networks private
 - **Client VPN:** managed OpenVPN-based access for individual users (client CIDR pool, subnet associations, authorization rules, certificate or IdP auth). "Office network" means Site-to-Site; "laptops" means Client VPN.
 - **Auditing protection in one account:**
 
-| Service | Layer / scope | Audit check |
-|---|---|---|
-| AWS WAF | L7 web ACLs on CloudFront, ALB, API Gateway (not instances or NLBs) | Is each web ACL actually associated? |
-| Shield Standard / Advanced | L3/L4 DDoS; Standard automatic, Advanced paid with response team and cost protection | Which resources are subscribed to Advanced? |
-| Network Firewall | Stateful VPC firewall in firewall subnets | Policy **and** route tables steering traffic through it |
-| Resolver DNS Firewall | Outbound DNS queries vs domain lists | Rule groups associated per VPC |
+| Service                    | Layer / scope                                                                        | Audit check                                             |
+| -------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| AWS WAF                    | L7 web ACLs on CloudFront, ALB, API Gateway (not instances or NLBs)                  | Is each web ACL actually associated?                    |
+| Shield Standard / Advanced | L3/L4 DDoS; Standard automatic, Advanced paid with response team and cost protection | Which resources are subscribed to Advanced?             |
+| Network Firewall           | Stateful VPC firewall in firewall subnets                                            | Policy **and** route tables steering traffic through it |
+| Resolver DNS Firewall      | Outbound DNS queries vs domain lists                                                 | Rule groups associated per VPC                          |
 
 - **Cost levers:**
   - Route S3 and DynamoDB through **gateway endpoints** to stop paying NAT data processing; the prefix route beats `0.0.0.0/0`, so traffic shifts at once.
@@ -53,22 +53,22 @@ This domain asks you to build VPC networking correctly, connect networks private
 - **TTL play for a migration:** lower the TTL (e.g. 3600 → 60) at least one old-TTL period before the cutover, switch, confirm health, then raise it again.
 - **Resolver:** at VPC base + 2 (or `169.254.169.253`), reachable only from inside the VPC.
 
-| Direction | Build |
-|---|---|
+| Direction                                         | Build                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------------- |
 | On premises must resolve VPC / private-zone names | **Inbound** endpoint; on-prem DNS conditionally forwards to its IPs |
-| VPC instances must resolve data-center names | **Outbound** endpoint + forwarding rules associated with the VPCs |
+| VPC instances must resolve data-center names      | **Outbound** endpoint + forwarding rules associated with the VPCs   |
 
 - Resolver endpoints carry DNS only. The VPN or other private link must already exist.
 - **Routing policies:**
 
-| Policy | Cue |
-|---|---|
-| Simple | One resource, no health checks |
-| Weighted | Canary, gradual migration, A/B |
-| Latency | Multi-Region, fastest Region per user |
-| Failover | Active-passive with a health check |
-| Geolocation | By user country or continent; always add a default record |
-| Geoproximity | By distance to resources, with a bias to shift share |
+| Policy            | Cue                                                            |
+| ----------------- | -------------------------------------------------------------- |
+| Simple            | One resource, no health checks                                 |
+| Weighted          | Canary, gradual migration, A/B                                 |
+| Latency           | Multi-Region, fastest Region per user                          |
+| Failover          | Active-passive with a health check                             |
+| Geolocation       | By user country or continent; always add a default record      |
+| Geoproximity      | By distance to resources, with a bias to shift share           |
 | Multivalue answer | Up to eight healthy records, client picks. Not a load balancer |
 
 - **Canary cutover:** lower the TTL, weight 90/10, watch errors, step to 0/100; roll back by setting the new weight to 0.
@@ -97,11 +97,11 @@ This domain asks you to build VPC networking correctly, connect networks private
 - **Instances cannot talk:** confirm the source's **actual** security group matches the one the rule references.
 - **Flow log basics:** capture at the VPC, subnet, or ENI level, delivered to CloudWatch Logs or S3. Read the addresses, ports, and `action`.
 
-| Signature | Meaning | Fix |
-|---|---|---|
+| Signature                              | Meaning                                                  | Fix                                      |
+| -------------------------------------- | -------------------------------------------------------- | ---------------------------------------- |
 | ACCEPT request, REJECT reply, same ENI | Stateless NACL blocking the return (a SG cannot do this) | Outbound ephemeral-port rule on the NACL |
-| REJECT on the request | SG or NACL blocking inbound | SG inbound first, then NACL |
-| No record at all | Packets never reached the ENI | Routing, DNS, source-side controls |
+| REJECT on the request                  | SG or NACL blocking inbound                              | SG inbound first, then NACL              |
+| No record at all                       | Packets never reached the ENI                            | Routing, DNS, source-side controls       |
 
 - **What flow logs leave out:** Amazon DNS queries, metadata (`169.254.169.254`), and DHCP are never logged. In `log-status`, `NODATA` means no traffic and `SKIPDATA` means records were dropped.
 - **Peering:** check for missing routes on either side (an asymmetric black hole), an expectation of transitivity, or overlapping CIDRs (peering cannot be created).
@@ -109,13 +109,13 @@ This domain asks you to build VPC networking correctly, connect networks private
 - **Reachability Analyzer** checks configuration statically and names the blocking SG, NACL, or route without sending traffic. Use flow logs to see what live traffic did.
 - **Which log to read:**
 
-| Question | Log |
-|---|---|
-| Blocked before the instance? | VPC Flow Logs |
-| LB or target at fault? | ELB access logs: compare `elb_status_code` with `target_status_code`; check `target_processing_time` |
-| Which WAF rule blocked a user? | WAF web ACL logs: terminating rule ID |
-| Edge cache or origin? | CloudFront standard logs: the `x-edge-result-type` and `sc-status` fields |
-| What did the app do? | Container logs in CloudWatch Logs |
+| Question                       | Log                                                                                                  |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Blocked before the instance?   | VPC Flow Logs                                                                                        |
+| LB or target at fault?         | ELB access logs: compare `elb_status_code` with `target_status_code`; check `target_processing_time` |
+| Which WAF rule blocked a user? | WAF web ACL logs: terminating rule ID                                                                |
+| Edge cache or origin?          | CloudFront standard logs: the `x-edge-result-type` and `sc-status` fields                            |
+| What did the app do?           | Container logs in CloudWatch Logs                                                                    |
 
 - **ELB logs:** 504 with `target_processing_time` -1 means the target never answered; ELB 5xx with target 200 means the LB tier is at fault.
 - **Low CloudFront hit ratio:** check `x-cache` and `x-edge-result-type`. Mostly `Miss` means a caching problem; `Error` means the origin failed (use origin failover, not cache tuning). Causes:

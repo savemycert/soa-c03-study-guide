@@ -12,13 +12,13 @@ This domain covers building infrastructure from repeatable definitions (images, 
 - **Container images:** push to ECR for ECS and EKS. ECR lifecycle policies expire old or untagged images.
 - **Template sections:**
 
-| Section | Operator's use |
-|---|---|
-| Resources (only required section) | Logical ID, type, properties |
-| Parameters | Per-environment values at deploy time |
-| Mappings | Static lookups, e.g. Region → AMI ID |
-| Conditions | Create resources only when true (e.g. prod-only Multi-AZ) |
-| Outputs | Surface values; `Export` + `Fn::ImportValue` share them across stacks |
+| Section                           | Operator's use                                                        |
+| --------------------------------- | --------------------------------------------------------------------- |
+| Resources (only required section) | Logical ID, type, properties                                          |
+| Parameters                        | Per-environment values at deploy time                                 |
+| Mappings                          | Static lookups, e.g. Region → AMI ID                                  |
+| Conditions                        | Create resources only when true (e.g. prod-only Multi-AZ)             |
+| Outputs                           | Surface values; `Export` + `Fn::ImportValue` share them across stacks |
 
 - **Cross-stack trap:** you cannot delete a stack, or remove an export, while another stack imports it.
 - CloudFormation orders creation by references and `DependsOn`, and runs independent resources in parallel.
@@ -30,11 +30,11 @@ This domain covers building infrastructure from repeatable definitions (images, 
 - **Drift detection:** reports `IN_SYNC`, `MODIFIED`, or `DELETED` per resource and `DRIFTED` for the stack. It never reverts anything, so reconcile the template or the resource before the next update.
 - **Stack states:**
 
-| State | What happened | Recovery |
-|---|---|---|
-| `ROLLBACK_COMPLETE` | Create failed and was rolled back | Cannot update. Fix the cause, delete, recreate |
-| `UPDATE_ROLLBACK_COMPLETE` | Update failed; prior config restored | Stack is usable |
-| `UPDATE_ROLLBACK_FAILED` | Rollback itself failed (out-of-band change, missing dependency) | Fix, then **continue update rollback**, optionally skipping resources |
+| State                      | What happened                                                   | Recovery                                                              |
+| -------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `ROLLBACK_COMPLETE`        | Create failed and was rolled back                               | Cannot update. Fix the cause, delete, recreate                        |
+| `UPDATE_ROLLBACK_COMPLETE` | Update failed; prior config restored                            | Stack is usable                                                       |
+| `UPDATE_ROLLBACK_FAILED`   | Rollback itself failed (out-of-band change, missing dependency) | Fix, then **continue update rollback**, optionally skipping resources |
 
 - **Nested stacks:** a child failure rolls back the parent. Read the child's own events.
 - **Troubleshooting a failed deploy:** read the stack events and find the **first** failure. Later ones are cascade noise.
@@ -43,11 +43,11 @@ This domain covers building infrastructure from repeatable definitions (images, 
   - **Access denied:** the call ran as the deployer, or as the stack's **service role** if one is attached. Check whichever identity actually made it.
 - **Multi-account provisioning:**
 
-| Service | Does | Pick when |
-|---|---|---|
-| StackSets | Deploys one template as stacks across accounts and Regions | Every account needs the same stack |
-| AWS RAM | Shares one existing resource (subnets, Transit Gateway, Resolver rules) | Many accounts should use one resource |
-| Service Catalog | Portfolio of approved CloudFormation products for self-service | Users may launch only vetted templates |
+| Service         | Does                                                                    | Pick when                              |
+| --------------- | ----------------------------------------------------------------------- | -------------------------------------- |
+| StackSets       | Deploys one template as stacks across accounts and Regions              | Every account needs the same stack     |
+| AWS RAM         | Shares one existing resource (subnets, Transit Gateway, Resolver rules) | Many accounts should use one resource  |
+| Service Catalog | Portfolio of approved CloudFormation products for self-service          | Users may launch only vetted templates |
 
 - **StackSets permissions:** self-managed means you create the admin and execution roles. **Service-managed** uses Organizations, creates the roles for you, and enables **automatic deployment** to accounts that join a target OU. That is the answer for "every new account gets the baseline".
 - **Deployment strategies:**
@@ -58,12 +58,12 @@ This domain covers building infrastructure from repeatable definitions (images, 
 - **CDK:** code in TypeScript, Python, and others. `cdk synth` produces a CloudFormation template and `cdk deploy` runs a normal stack, so change sets, rollbacks, and drift all behave the same.
 - **Terraform vs CloudFormation:**
 
-| | CloudFormation | Terraform |
-|---|---|---|
-| State | Held by AWS in the stack | A state file you store, secure, and lock (often an S3 backend) |
-| Scope | AWS | Multi-cloud |
-| Preview | Change set | Plan |
-| Drift | On-demand drift detection | State refresh at plan time |
+|         | CloudFormation            | Terraform                                                      |
+| ------- | ------------------------- | -------------------------------------------------------------- |
+| State   | Held by AWS in the stack  | A state file you store, secure, and lock (often an S3 backend) |
+| Scope   | AWS                       | Multi-cloud                                                    |
+| Preview | Change set                | Plan                                                           |
+| Drift   | On-demand drift detection | State refresh at plan time                                     |
 
 - **Git** is the source of truth. "Versioned, reviewed, auditable infrastructure changes" means a repository workflow, not console edits.
 
@@ -80,13 +80,13 @@ This domain covers building infrastructure from repeatable definitions (images, 
 - **Automation runbooks:** multi-step workflows calling APIs, scripts, and Run Command, with outputs passed between steps. Predefined ones include `AWS-RestartEC2Instance`, `AWS-StopEC2Instance`, and `AWS-CreateImage`. **Approval steps** add a human gate, and rate controls bound the blast radius. They can be triggered by a maintenance window or an EventBridge rule.
 - **Patching campaign with Patch Manager:**
 
-| Piece | Defines |
-|---|---|
-| Patch baseline | What counts as patched: classifications, severities, explicit approve/reject, auto-approval delay |
-| Patch group (tag) | Which instances use which baseline |
-| Maintenance window | When: schedule, duration, cutoff |
-| `AWS-RunPatchBaseline` | How: **Scan** reports only, **Install** applies (and reboots as configured) |
-| Compliance data | Proof of which instances lack approved patches |
+| Piece                  | Defines                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------- |
+| Patch baseline         | What counts as patched: classifications, severities, explicit approve/reject, auto-approval delay |
+| Patch group (tag)      | Which instances use which baseline                                                                |
+| Maintenance window     | When: schedule, duration, cutoff                                                                  |
+| `AWS-RunPatchBaseline` | How: **Scan** reports only, **Install** applies (and reboots as configured)                       |
+| Compliance data        | Proof of which instances lack approved patches                                                    |
 
 - Typical rhythm: Scan daily, Install inside the window with concurrency and error thresholds.
 - **State Manager:** an association of document + targets + schedule that keeps reapplying to fix drift, including on instances launched later. Examples: keep the CloudWatch agent installed, or run `AWS-UpdateSSMAgent`.
@@ -94,13 +94,13 @@ This domain covers building infrastructure from repeatable definitions (images, 
 - **Parameter Store:** hierarchical, versioned config (AMI IDs, URLs, flags). `SecureString` values are KMS-encrypted. Runbooks, documents, and templates resolve parameters at run time, so one update reaches every consumer.
 - **Picking the tool:**
 
-| Need | Tool |
-|---|---|
-| Run it once across the fleet | Run Command |
-| Multi-step procedure, maybe approval-gated | Automation runbook |
-| Keep a setting true forever | State Manager |
-| OS patches with approval rules and reporting | Patch Manager + maintenance window |
-| Interactive shell | Session Manager (never an automation answer) |
+| Need                                         | Tool                                         |
+| -------------------------------------------- | -------------------------------------------- |
+| Run it once across the fleet                 | Run Command                                  |
+| Multi-step procedure, maybe approval-gated   | Automation runbook                           |
+| Keep a setting true forever                  | State Manager                                |
+| OS patches with approval rules and reporting | Patch Manager + maintenance window           |
+| Interactive shell                            | Session Manager (never an automation answer) |
 
 - **EventBridge as the router:** a rule matches an event pattern or a schedule and targets Lambda, runbooks, Run Command, SQS, SNS, or Step Functions. Typical pairings:
   - Instance state change → tagging or remediation runbook.

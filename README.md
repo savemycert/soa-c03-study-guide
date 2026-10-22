@@ -32,7 +32,7 @@ Maintained by [SaveMyCert](https://www.savemycert.com/?utm_source=github&utm_med
 | Exam fee | $150 |
 | Valid for | 3 years |
 
-Exam details change. Always confirm them in the official [AWS Certified CloudOps Engineer – Associate (SOA-C03) certification page](https://aws.amazon.com/certification/certified-cloudops-engineer-associate/) from Amazon Web Services.
+Exam details change. Always confirm them in the official [AWS Certified CloudOps Engineer – Associate (SOA-C03) exam guide](https://docs.aws.amazon.com/aws-certification/latest/sysops-administrator-associate-03/sysops-administrator-associate-03.html) from Amazon Web Services.
 
 ## Exam domains
 
@@ -71,20 +71,20 @@ Tick each topic off once you can explain it without notes. The "Must know" facts
 📝 Revision notes: [Domain 1: Monitoring, Logging, Analysis, Remediation, and Performance Optimization](notes/domain-1-monitoring-logging-analysis-remediation-and-performance-optimization.md)
 
 - [ ] **1.1 Implement metrics, alarms, and filters by using AWS monitoring and logging services**
-  <br>Monitoring and logging with CloudWatch, CloudTrail, and Amazon Managed Service for Prometheus; configuring and managing the CloudWatch agent for EC2, ECS, and EKS metrics/logs; CloudWatch alarms (including composite alarms) that invoke services directly or via EventBridge, with SNS notifications; shareable cross-account, cross-Region dashboards.
+  <br>Monitoring and logging for serverless, compute, and AI workloads with CloudWatch, CloudTrail, and Amazon Managed Service for Prometheus; configuring and managing the CloudWatch agent for EC2, ECS, and EKS metrics/logs; CloudWatch alarms (including composite alarms) that invoke services directly or via EventBridge, with SNS notifications; shareable cross-account, cross-Region dashboards.
   - 📖 Lesson: [CloudWatch Metrics, Alarms, and Log Filters for SOA-C03](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-cloudwatch-metrics-alarms-logging/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: Default EC2 metrics never include memory or disk-space utilization — collecting those requires the CloudWatch agent.
-  - Must know: Standard EC2 monitoring is 5-minute metrics; detailed monitoring is 1-minute, costs extra, and adds frequency, not new metrics.
+  - Must know: Default EC2 metrics never include memory or disk-space utilization — collecting those (and process counts via procstat) requires the CloudWatch agent.
+  - Must know: Run the agent at fleet scale with one Parameter Store configuration (AmazonCloudWatch-*), AWS-ConfigureAWSPackage to install, and AmazonCloudWatch-ManageAgent to apply; instances need CloudWatchAgentServerPolicy.
 - [ ] **1.2 Identify and remediate issues by using monitoring and availability metrics**
-  <br>Analyzing performance metrics and automating remediation with CloudWatch, AWS User Notifications, Lambda, Systems Manager, CloudTrail, and auto scaling; routing, enriching, and delivering events with EventBridge and troubleshooting event bus rules; creating and running custom and predefined Systems Manager Automation runbooks.
+  <br>Analyzing performance metrics and automating remediation with CloudWatch, Lambda, Systems Manager, CloudTrail, Kiro, and AWS DevOps Agent; routing, enriching, and delivering events with EventBridge and troubleshooting event bus rules; creating and running custom and predefined Systems Manager Automation runbooks.
   - 📖 Lesson: [Automated Remediation: EventBridge, Runbooks, and EC2 Recovery (SOA-C03)](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-automated-remediation-eventbridge-runbooks/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: StatusCheckFailed_System means AWS infrastructure under the instance failed — the recover action migrates it to healthy hardware, preserving instance ID, IP addresses, and EBS volumes.
-  - Must know: StatusCheckFailed_Instance means an OS-level problem (exhausted memory, corrupted filesystem, bad network config, failed kernel) — recovery can't fix it; reboot or repair the OS.
+  - Must know: The recover action attaches only to a StatusCheckFailed_System alarm: it keeps instance ID, IP addresses and EBS volumes, loses RAM, instance store data and uptime, and is not supported for Auto Scaling group members or Dedicated Hosts.
+  - Must know: StatusCheckFailed_Instance means an OS-level problem — a system-check alarm never fires for it; use the reboot action, and repair an unbootable OS offline with AWSSupport-ExecuteEC2Rescue or a helper instance.
 - [ ] **1.3 Implement performance optimization strategies for compute, storage, and database resources**
-  <br>Optimizing compute via performance metrics, resource tags, and AWS tools (EC2 instance selection, placement groups); analyzing and optimizing EBS performance and volume types; S3 performance strategies (DataSync, Transfer Acceleration, multipart uploads, lifecycle policies); selecting and optimizing shared storage (EFS, FSx, EFS lifecycle policies); monitoring RDS with Performance Insights and CloudWatch alarms and tuning with proactive recommendations and RDS Proxy.
+  <br>Optimizing compute via performance metrics, resource tags, and AWS tools (EC2 instance selection, placement groups); analyzing and optimizing EBS performance and volume types; S3 performance strategies (DataSync, Transfer Acceleration, multipart uploads, lifecycle policies); selecting and optimizing shared storage (EFS, FSx, Amazon S3 Files, EFS lifecycle policies); monitoring RDS with Performance Insights and CloudWatch alarms and tuning with proactive recommendations and RDS Proxy.
   - 📖 Lesson: [EC2, EBS, S3 and RDS Performance Optimization for SOA-C03](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-ec2-ebs-rds-performance-optimization/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: Compute Optimizer turns CloudWatch history into over/under-provisioned classifications with specific EC2, EBS, and Lambda recommendations — Trusted Advisor only flags, it doesn't size.
-  - Must know: A T-family instance that slows under sustained load has drained its CPU credits — check CPUCreditBalance; fix with unlimited mode or a fixed-performance family.
+  - Must know: Trusted Advisor only flags idle or low-utilization instances; Compute Optimizer turns CloudWatch history into specific EC2, EBS and Lambda recommendations; use a 32-day lookback (free) for monthly peaks, and publish memory with the CloudWatch agent or it is ignored.
+  - Must know: Tags make findings and spend attributable, but a tag reaches Cost Explorer only after it is activated as a cost allocation tag; grouping starts at activation unless you request a backfill (up to 12 months).
 
 ### Domain 2: Reliability and Business Continuity
 
@@ -95,18 +95,18 @@ Tick each topic off once you can explain it without notes. The "Must know" facts
 - [ ] **2.1 Implement scalability and elasticity**
   <br>Configuring and managing scaling mechanisms across compute environments; caching for dynamic scalability (CloudFront, ElastiCache); scaling in managed databases (RDS, DynamoDB).
   - 📖 Lesson: [Auto Scaling and Elasticity: EC2, Caching, and Database Scaling](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-auto-scaling-elasticity/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: "Keep a metric near a value" (for example, average CPU at 50%) → target tracking, the default scaling-policy answer.
-  - Must know: Simple scaling is legacy: one adjustment per cooldown; prefer target tracking or step scaling for reactive load.
+  - Must know: "Keep a metric near a value" → target tracking, on a metric that falls as capacity is added: average CPU, ALBRequestCountPerTarget (not total RequestCount), or SQS backlog per instance.
+  - Must know: Backlog per instance target = acceptable wait ÷ processing time per message, a number of messages (120 s ÷ 4 s = 30).
 - [ ] **2.2 Implement highly available and resilient environments**
   <br>Configuring and troubleshooting Elastic Load Balancing and Route 53 health checks; configuring fault-tolerant systems such as Multi-AZ deployments.
   - 📖 Lesson: [High Availability: ELB and Route 53 Health Checks, Multi-AZ Design](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-high-availability-health-checks/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: "Static IP per AZ", UDP, or extreme TCP performance → NLB; path, host, or header routing → ALB.
-  - Must know: All targets unhealthy is systemic: health-check path or port, a security group blocking probes from the ALB, or an app-wide non-2xx response.
+  - Must know: UDP, a static IP per AZ or PrivateLink → NLB; path, host or header routing → ALB; transparent appliance insertion → Gateway Load Balancer. An NLB can front an ALB through an ALB-type target group.
+  - Must know: ALB listener rules run from the lowest priority number, first match wins; one HTTPS listener serves many domains with SNI certificates and host-header rules.
 - [ ] **2.3 Implement backup and restore strategies**
-  <br>Automating snapshots and backups for EC2, RDS, EBS, S3, and DynamoDB with services like AWS Backup; restoring databases (e.g. point-in-time restore) to meet RTO, RPO, and cost requirements; versioning for storage services (S3, FSx); disaster-recovery procedures.
+  <br>Automating snapshots and backups for EC2, RDS, EBS, S3, and DynamoDB with services like AWS Backup; restoring databases (e.g. point-in-time restore) to meet RTO, RPO, and cost requirements; versioning for storage services (S3, FSx); disaster-recovery procedures and best practices (backup and restore, pilot light, warm standby, active/active).
   - 📖 Lesson: [Backup, Restore, and Disaster Recovery Strategies on AWS](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-backup-restore-disaster-recovery/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: RPO = maximum acceptable data loss, RTO = maximum acceptable downtime — translate every scenario into these two numbers first.
-  - Must know: AWS Backup centralizes schedules, retention, cold-storage lifecycle, and cross-Region/cross-account copies; tag-based resource assignment is the at-scale answer.
+  - Must know: RPO = maximum acceptable data loss, RTO = maximum acceptable downtime; worst-case RPO equals the backup interval, and copying a recovery point never makes it fresher.
+  - Must know: AWS Backup centralizes schedules (hourly at most frequent), retention, copies and lifecycle; tag-based assignment and organization backup policies (with the IAM role pre-created in every account) are the at-scale answers.
 
 ### Domain 3: Deployment, Provisioning, and Automation
 
@@ -117,13 +117,13 @@ Tick each topic off once you can explain it without notes. The "Must know" facts
 - [ ] **3.1 Provision and maintain cloud resources**
   <br>Creating and managing AMIs and container images (EC2 Image Builder); managing resource stacks with CloudFormation and the AWS CDK and remediating deployment issues (subnet sizing, CloudFormation errors, permissions); provisioning and sharing resources across Regions and accounts (AWS RAM, CloudFormation StackSets); deployment strategies and third-party automation tools (Terraform, Git).
   - 📖 Lesson: [CloudFormation, StackSets, and golden images: provisioning for SOA-C03](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-cloudformation-provisioning-stacksets/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: Deregistering an AMI does not delete its EBS snapshots — delete them separately or storage costs continue.
-  - Must know: A change set previews every Add/Modify/Remove and flags Replacement — a replaced resource is deleted and recreated, so check stateful resources first.
+  - Must know: AMIs are Regional: copy them ahead of need; a copy is re-encrypted with a destination-Region key and must be shared again.
+  - Must know: Share encrypted AMIs only under a customer managed key that target accounts can use — never aws/ebs; share with an OU ARN to cover future accounts.
 - [ ] **3.2 Automate the management of existing resources**
-  <br>Automating operational processes with Systems Manager; event-driven automation with Lambda and S3 Event Notifications.
+  <br>Automating operational processes with Systems Manager; event-driven automation with Lambda, S3 Event Notifications, EventBridge, and AWS DevOps Agent.
   - 📖 Lesson: [Systems Manager and event-driven automation: managing resources for SOA-C03](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-systems-manager-event-driven-automation/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: A managed instance needs three things: a running SSM Agent, an instance profile with AmazonSSMManagedInstanceCore, and a network path to the Systems Manager endpoints.
-  - Must know: Shell access without SSH keys, bastion hosts, or open inbound ports → Session Manager, with sessions logged to CloudWatch Logs or S3.
+  - Must know: A managed node needs a running (recent enough) SSM Agent, credentials from an instance profile or Default Host Management Configuration (IMDSv2, agent 3.2.582.0+), and a path to the ssm, ssmmessages and ec2messages endpoints.
+  - Must know: Interface endpoints only work with private DNS enabled and a security group allowing HTTPS 443 from the nodes; S3, KMS and Logs endpoints serve patching, encryption and logging, not registration.
 
 ### Domain 4: Security and Compliance
 
@@ -132,15 +132,15 @@ Tick each topic off once you can explain it without notes. The "Must know" facts
 📝 Revision notes: [Domain 4: Security and Compliance](notes/domain-4-security-and-compliance.md)
 
 - [ ] **4.1 Implement and manage security and compliance tools and policies**
-  <br>IAM features — password policies, MFA, roles, federated identity, resource policies, policy conditions; troubleshooting and auditing access with CloudTrail, IAM Access Analyzer, and the IAM policy simulator; secure multi-account strategies; remediating Trusted Advisor security checks; enforcing compliance requirements such as Region and service restrictions.
+  <br>IAM features — password policies, MFA, roles, federated identity, resource policies, policy conditions; troubleshooting and auditing access with CloudTrail, IAM Access Analyzer, and the IAM policy simulator; secure multi-account strategies (AWS Organizations, service control policies, IAM Identity Center); remediating Trusted Advisor security checks; enforcing compliance requirements and continuous monitoring (Region and service selections, AWS Config conformance packs).
   - 📖 Lesson: [IAM, AWS Organizations, and Compliance Tools for CloudOps (SOA-C03)](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-iam-organizations-compliance-tools/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: Only IAM identity and resource policies grant access — SCPs and permissions boundaries can only cap it, and an explicit deny anywhere always wins.
-  - Must know: Enforce MFA with a Deny policy conditioned on aws:MultiFactorAuthPresent — the account password policy cannot require MFA.
+  - Must know: Only identity and resource policies grant access — SCPs, RCPs, permissions boundaries and session policies can only cap it, and an explicit deny anywhere always wins.
+  - Must know: Enforce MFA with a Deny using BoolIfExists on aws:MultiFactorAuthPresent; plain Bool or MultiFactorAuthAge fail open for access-key requests, and CLI users get MFA-backed credentials from sts get-session-token.
 - [ ] **4.2 Implement strategies to protect data and infrastructure**
-  <br>Data classification schemes; encryption at rest (AWS KMS) and in transit (ACM); securely storing secrets with AWS services; configuring reports and remediating findings across Security Hub, GuardDuty, AWS Config, and Inspector.
+  <br>Data classification schemes; encryption at rest (AWS KMS) and in transit (ACM); securely storing secrets with AWS services; configuring reports and remediating findings across Security Hub, GuardDuty, AWS Config, Inspector, and AWS Security Agent.
   - 📖 Lesson: [Data Protection on AWS: KMS, ACM, Secrets, and Security Services (SOA-C03)](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-data-protection-security-services/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: You cannot encrypt an existing EBS volume or RDS instance in place — snapshot, copy the snapshot with encryption, restore, and cut over.
-  - Must know: The KMS key policy is the primary authority: an IAM allow is useless if the key policy neither permits the principal nor delegates to IAM.
+  - Must know: Classification is a tag: tag policies standardize it, tag-scoped (organization) Config rules enforce and report on it, and Macie checks that S3 data matches its label.
+  - Must know: Macie automated discovery samples daily for broad coverage; a discovery job with 100% sampling depth inspects every object in the buckets you choose. Customer managed keys must let the Macie role decrypt.
 
 ### Domain 5: Networking and Content Delivery
 
@@ -149,20 +149,20 @@ Tick each topic off once you can explain it without notes. The "Must know" facts
 📝 Revision notes: [Domain 5: Networking and Content Delivery](notes/domain-5-networking-and-content-delivery.md)
 
 - [ ] **5.1 Implement and optimize networking features and connectivity**
-  <br>Configuring a VPC — subnets, route tables, network ACLs, security groups, NAT gateways, internet gateway, egress-only internet gateway; private networking connectivity; auditing network protection services (Route 53 Resolver DNS Firewall, WAF, Shield, Network Firewall) in a single account; optimizing network architecture cost.
+  <br>Configuring a VPC — subnets, route tables, network ACLs, security groups, NAT gateways, internet gateway, egress-only internet gateway; private networking connectivity (VPC endpoints, AWS PrivateLink, VPC peering); auditing network protection services (Route 53 Resolver DNS Firewall, WAF, Shield, Network Firewall) in a single account; optimizing network architecture cost.
   - 📖 Lesson: [VPC Networking and Private Connectivity for SOA-C03](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-vpc-networking-private-connectivity/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
   - Must know: A subnet is public only if its route table sends 0.0.0.0/0 to an internet gateway and its instances have public IPs.
-  - Must know: Every subnet loses five IPs: network address, VPC router, DNS resolver, future-use, and broadcast.
+  - Must know: Every subnet loses five IPs; subnet and primary VPC CIDRs are fixed, so add a secondary VPC CIDR and new subnets when addresses run out.
 - [ ] **5.2 Configure domains, DNS services, and content delivery**
   <br>Configuring DNS with Route 53 Resolver; Route 53 routing policies, configurations, and query logging; content and service distribution with CloudFront and Global Accelerator.
   - 📖 Lesson: [Route 53 DNS and CloudFront Content Delivery for SOA-C03](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-route53-dns-cloudfront-delivery/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
-  - Must know: Alias records work at the zone apex and are free to query when targeting AWS resources; CNAMEs cannot sit at the apex.
-  - Must know: On-prem must resolve VPC names: inbound Resolver endpoint. VPCs must resolve on-prem domains: outbound endpoint plus forwarding rules.
+  - Must know: Alias records work at the zone apex, track their AWS target automatically, and are free to query when targeting AWS resources; CNAMEs cannot sit at the apex.
+  - Must know: Lower a record's TTL at least one old-TTL period before a cutover; lowering it at the moment of change leaves resolvers on the old answer.
 - [ ] **5.3 Troubleshoot network connectivity issues**
   <br>Troubleshooting VPC configurations (subnets, route tables, network ACLs, security groups, transit gateways, NAT gateways); interpreting networking logs (VPC flow logs, ELB access logs, WAF web ACL logs, CloudFront logs, container logs); remediating CloudFront caching issues; troubleshooting hybrid and private connectivity; configuring and analyzing CloudWatch network monitoring.
   - 📖 Lesson: [AWS Network Troubleshooting: VPC Flow Logs and the Layered Diagnosis Method](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/aws-network-troubleshooting-vpc-flow-logs/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
   - Must know: Security groups are stateful; network ACLs are stateless — a rejected reply to an accepted request is always a NACL problem.
-  - Must know: ACCEPT then REJECT for the same flow in VPC Flow Logs means a NACL is blocking the return on ephemeral ports 1024-65535.
+  - Must know: Network ACLs never filter Route 53 Resolver (VPC+2), instance metadata, DHCP or Amazon Time Sync traffic.
 
 ## How to study for SOA-C03
 
@@ -178,7 +178,7 @@ Tick each topic off once you can explain it without notes. The "Must know" facts
 
 ## Free resources
 
-- [AWS Certified CloudOps Engineer – Associate (SOA-C03) certification page](https://aws.amazon.com/certification/certified-cloudops-engineer-associate/): the official source (Amazon Web Services)
+- [AWS Certified CloudOps Engineer – Associate (SOA-C03) exam guide](https://docs.aws.amazon.com/aws-certification/latest/sysops-administrator-associate-03/sysops-administrator-associate-03.html): the official source (Amazon Web Services)
 - [SOA-C03 certification overview](https://www.savemycert.com/certifications/aws-cloudops-engineer-associate/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide)
 - [SOA-C03 revision notes](https://www.savemycert.com/revision/aws-cloudops-engineer-associate/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide): every lesson, free to read
 - [SOA-C03 practice questions](https://www.savemycert.com/practice/aws-cloudops-engineer-associate/?utm_source=github&utm_medium=readme&utm_campaign=soa-c03-study-guide): with an explanation on every option

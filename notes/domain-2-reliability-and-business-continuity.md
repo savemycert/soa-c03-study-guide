@@ -8,13 +8,13 @@ This domain tests whether a workload grows and shrinks on its own, survives inst
 - **Health:** EC2 status checks are the default. Add the **ELB** health check type so a broken app on a healthy VM is replaced. The **grace period** delays health evaluation for new instances. If it is too short, instances are killed while booting in a loop.
 - **AZ rebalancing** keeps instances even across zones. **Scale-in protection** shields instances doing long jobs.
 
-| Policy | Behavior | Choose when |
-|---|---|---|
+| Policy          | Behavior                                                     | Choose when                             |
+| --------------- | ------------------------------------------------------------ | --------------------------------------- |
 | Target tracking | Holds a metric at a target; AWS manages the alarms both ways | "Keep CPU near 50%". The default answer |
-| Step | Adjustment size depends on breach size | Different responses per severity |
-| Simple | One adjustment, then waits out the cooldown | Almost never. Legacy and slow |
-| Scheduled | Sets capacity at set times | "Every weekday at 9 a.m." |
-| Predictive | Forecasts from history and launches ahead | Recurring patterns with long boot times |
+| Step            | Adjustment size depends on breach size                       | Different responses per severity        |
+| Simple          | One adjustment, then waits out the cooldown                  | Almost never. Legacy and slow           |
+| Scheduled       | Sets capacity at set times                                   | "Every weekday at 9 a.m."               |
+| Predictive      | Forecasts from history and launches ahead                    | Recurring patterns with long boot times |
 
 - Policies can be combined (target tracking plus scheduled is common). When several fire, the one asking for the most capacity wins.
 - **Cooldown vs warmup vs grace:**
@@ -48,13 +48,13 @@ This domain tests whether a workload grows and shrinks on its own, survives inst
 
 ## 2.2 Implement highly available and resilient environments
 
-| | ALB | NLB |
-|---|---|---|
-| Layer | 7 (HTTP/HTTPS) | 4 (TCP, UDP, TLS) |
-| Routing | Path, host, header, query string; redirects | By listener port only |
-| Addressing | DNS name; IPs change | Static IP per AZ, Elastic IP support |
-| Client IP | `X-Forwarded-For` header | Preserved on the connection |
-| Cross-zone | On by default | Off by default; cross-AZ charges when enabled |
+|            | ALB                                         | NLB                                           |
+| ---------- | ------------------------------------------- | --------------------------------------------- |
+| Layer      | 7 (HTTP/HTTPS)                              | 4 (TCP, UDP, TLS)                             |
+| Routing    | Path, host, header, query string; redirects | By listener port only                         |
+| Addressing | DNS name; IPs change                        | Static IP per AZ, Elastic IP support          |
+| Client IP  | `X-Forwarded-For` header                    | Preserved on the connection                   |
+| Cross-zone | On by default                               | Off by default; cross-AZ charges when enabled |
 
 - An NLB can front an ALB to give an HTTP stack a fixed IP while keeping layer-7 rules.
 - **Target group** = targets + one health check config. One bad setting takes out every target at once.
@@ -71,11 +71,11 @@ This domain tests whether a workload grows and shrinks on its own, survives inst
 - **Two layers:** ELB heals inside a Region within seconds, with no DNS change. Route 53 moves users between Regions, but only as fast as TTL caching allows, so keep failover TTLs low. **Application Recovery Controller** adds readiness checks and routing controls for deliberate Regional failover.
 - **RDS availability options:**
 
-| | Multi-AZ instance standby | Read replica | Multi-AZ DB cluster |
-|---|---|---|---|
-| Replication | Synchronous | Asynchronous | Writer + two standbys |
-| Readable | No | Yes | Yes, standbys serve reads |
-| Failover | Automatic, same endpoint | Manual promotion | Automatic |
+|             | Multi-AZ instance standby | Read replica     | Multi-AZ DB cluster       |
+| ----------- | ------------------------- | ---------------- | ------------------------- |
+| Replication | Synchronous               | Asynchronous     | Writer + two standbys     |
+| Readable    | No                        | Yes              | Yes, standbys serve reads |
+| Failover    | Automatic, same endpoint  | Manual promotion | Automatic                 |
 
 - An ElastiCache Redis replication group with Multi-AZ promotes a replica automatically.
 - **Static stability:** survive an AZ loss with capacity already in place.
@@ -97,14 +97,14 @@ This domain tests whether a workload grows and shrinks on its own, survives inst
   - It covers EC2, EBS, RDS/Aurora, DynamoDB, EFS, FSx, and S3.
 - **Native options:**
 
-| Mechanism | Scope | Retention / restore window |
-|---|---|---|
-| Data Lifecycle Manager | EBS snapshots by tag | Your schedule. Use it for EBS-only scenarios |
-| RDS automated backups | Daily snapshot + transaction logs → PITR | Up to 35 days (0 disables). Removed with the instance by default |
-| RDS manual snapshot | On demand | Until you delete it; survives instance deletion |
-| DynamoDB PITR | Continuous | Any second in the last 35 days |
-| DynamoDB on-demand backup | Full snapshot | Until deleted |
-| FSx | Automatic daily + user-initiated backups | Configurable / until deleted |
+| Mechanism                 | Scope                                    | Retention / restore window                                       |
+| ------------------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| Data Lifecycle Manager    | EBS snapshots by tag                     | Your schedule. Use it for EBS-only scenarios                     |
+| RDS automated backups     | Daily snapshot + transaction logs → PITR | Up to 35 days (0 disables). Removed with the instance by default |
+| RDS manual snapshot       | On demand                                | Until you delete it; survives instance deletion                  |
+| DynamoDB PITR             | Continuous                               | Any second in the last 35 days                                   |
+| DynamoDB on-demand backup | Full snapshot                            | Until deleted                                                    |
+| FSx                       | Automatic daily + user-initiated backups | Configurable / until deleted                                     |
 
 - **Every restore makes a new resource.** RDS PITR or snapshot restore gives a new instance with a **new endpoint**. DynamoDB restores to a new table, and EBS to a new volume. "Restored but the app still shows old data" or "cannot connect" means the app was never repointed. A Route 53 CNAME in front of the database makes this a one-record change. DynamoDB restores do not bring auto scaling settings, tags, or alarms.
 - **Test restores.** Timing a restore on real data volume is the only proof the RTO holds.
@@ -117,12 +117,12 @@ This domain tests whether a workload grows and shrinks on its own, survives inst
 - **FSx for Windows** shadow copies let users restore earlier file versions.
 - **DR patterns (cost rises, RTO/RPO fall):**
 
-| Pattern | Running in the recovery Region | RTO | Cue |
-|---|---|---|---|
-| Backup and restore | Nothing but backups | Hours | "Lowest cost" |
-| Pilot light | Live replicated data; app tier off | Tens of minutes | "Data current, servers started at failover" |
-| Warm standby | Full stack, scaled down | Minutes | "Scaled-down copy already running" |
-| Multi-site active/active | Full stack serving traffic | Near zero | "No downtime" |
+| Pattern                  | Running in the recovery Region     | RTO             | Cue                                         |
+| ------------------------ | ---------------------------------- | --------------- | ------------------------------------------- |
+| Backup and restore       | Nothing but backups                | Hours           | "Lowest cost"                               |
+| Pilot light              | Live replicated data; app tier off | Tens of minutes | "Data current, servers started at failover" |
+| Warm standby             | Full stack, scaled down            | Minutes         | "Scaled-down copy already running"          |
+| Multi-site active/active | Full stack serving traffic         | Near zero       | "No downtime"                               |
 
 - **Failover steps:** Route 53 failover routing, then promote a cross-Region read replica (fast, near-current data) or restore a cross-Region copy (slower, older data), repoint apps, scale up, verify.
 - **Worked cue:** RPO 15 minutes, RTO 1 hour, lowest cost → pilot light with a cross-Region replica and a rehearsed runbook.

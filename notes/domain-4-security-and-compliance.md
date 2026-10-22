@@ -29,13 +29,13 @@ This domain looks at security from the operator's seat: getting IAM and multi-ac
   6. Confirm with the **policy simulator** before and after the fix.
 - **Audit toolkit:**
 
-| Question | Tool |
-|---|---|
-| Who did it, from where, when | CloudTrail (`userIdentity`, `eventName`, source IP) |
-| Would this policy allow it | IAM policy simulator (nothing executes) |
-| What is reachable from outside the account or org | IAM Access Analyzer external access findings |
-| What access is never used | Access Analyzer unused-access findings, access advisor |
-| Password and key age, MFA status per user | Credential report |
+| Question                                          | Tool                                                   |
+| ------------------------------------------------- | ------------------------------------------------------ |
+| Who did it, from where, when                      | CloudTrail (`userIdentity`, `eventName`, source IP)    |
+| Would this policy allow it                        | IAM policy simulator (nothing executes)                |
+| What is reachable from outside the account or org | IAM Access Analyzer external access findings           |
+| What access is never used                         | Access Analyzer unused-access findings, access advisor |
+| Password and key age, MFA status per user         | Credential report                                      |
 
 - **Organizations and SCPs:**
   - OUs are organized by function (workloads, sandbox, security).
@@ -45,13 +45,13 @@ This domain looks at security from the operator's seat: getting IAM and multi-ac
 - **Control Tower** packages Organizations, Identity Center, and guardrails into a landing zone.
 - **Trusted Advisor security checks:**
 
-| Finding | Fix |
-|---|---|
-| Security group open to 0.0.0.0/0 on risky ports | Remove or narrow the rule |
-| Root account without MFA | Add an MFA device to root |
-| Open S3 bucket permissions | Block Public Access + correct the bucket policy |
-| Old or unused access keys | Rotate or delete; move to roles |
-| Working as root (IAM use check) | Use IAM principals |
+| Finding                                         | Fix                                             |
+| ----------------------------------------------- | ----------------------------------------------- |
+| Security group open to 0.0.0.0/0 on risky ports | Remove or narrow the rule                       |
+| Root account without MFA                        | Add an MFA device to root                       |
+| Open S3 bucket permissions                      | Block Public Access + correct the bucket policy |
+| Old or unused access keys                       | Rotate or delete; move to roles                 |
+| Working as root (IAM use check)                 | Use IAM principals                              |
 
 - Core checks are available to everyone; Business and Enterprise support unlock the rest. Status changes reach EventBridge, which can trigger SNS, Lambda, or a runbook.
 - **Region and service restriction:** an SCP denying all actions when `aws:RequestedRegion` is outside the approved list, with `NotAction` exempting global services (IAM, CloudFront, Route 53). Only an SCP reaches every principal in every member account. Deny unapproved services the same way.
@@ -84,21 +84,21 @@ This domain looks at security from the operator's seat: getting IAM and multi-ac
 - **Enforcing TLS:** an S3 bucket policy denying requests where `aws:SecureTransport` is `false`. On the ALB, make the port 80 listener redirect to HTTPS. "Encrypted at every hop" means re-encrypting to HTTPS targets rather than ending TLS at the LB.
 - **Secrets:** never in code, user data, AMIs, or plain env files. Fetch them at run time with the workload's role.
 
-| | Secrets Manager | Parameter Store SecureString |
-|---|---|---|
-| Rotation | Automatic; managed integration for RDS | None built in |
-| Cost | Per secret per month | Standard tier free |
-| Pick when | Credentials must rotate | Static secrets or config, cost-sensitive |
+|           | Secrets Manager                        | Parameter Store SecureString             |
+| --------- | -------------------------------------- | ---------------------------------------- |
+| Rotation  | Automatic; managed integration for RDS | None built in                            |
+| Cost      | Per secret per month                   | Standard tier free                       |
+| Pick when | Credentials must rotate                | Static secrets or config, cost-sensitive |
 
 - **Findings services:**
 
-| Question | Service |
-|---|---|
-| Is something attacking me now? | GuardDuty (CloudTrail, VPC Flow Logs, DNS logs; no agents; detects, never blocks) |
-| Known CVEs or unintended reachability on EC2, ECR images, Lambda? | Inspector |
-| Sensitive data in S3? | Macie |
-| Resources configured per policy? | AWS Config |
-| One view, standards score, all accounts and Regions | Security Hub (delegated administrator) |
+| Question                                                          | Service                                                                           |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Is something attacking me now?                                    | GuardDuty (CloudTrail, VPC Flow Logs, DNS logs; no agents; detects, never blocks) |
+| Known CVEs or unintended reachability on EC2, ECR images, Lambda? | Inspector                                                                         |
+| Sensitive data in S3?                                             | Macie                                                                             |
+| Resources configured per policy?                                  | AWS Config                                                                        |
+| One view, standards score, all accounts and Regions               | Security Hub (delegated administrator)                                            |
 
 - **Distractor logic:** Inspector reports what could be exploited, GuardDuty what is being exploited. Security Hub is never the primary detector for a specific symptom. **AWS Security Agent** is named in the guide next to these services; recognize the name.
 - **Remediation loop:** a finding goes to EventBridge, where a rule filters by source, type, and severity. It notifies SNS and invokes Lambda or an SSM runbook (for example, swap in an isolation security group and snapshot the volumes, revoke an open rule, or enable Block Public Access).

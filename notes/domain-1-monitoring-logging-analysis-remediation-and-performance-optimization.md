@@ -7,13 +7,13 @@ This domain is about seeing what production is doing and acting on it: collectin
 - **A metric is identified by namespace + name + dimensions.** Each unique combination is its own metric, so querying a custom metric without the dimensions it was published with returns nothing.
 - **Resolution:**
 
-| Source | Interval | Notes |
-|---|---|---|
-| EC2 standard monitoring | 5 minutes, free | Hypervisor view: CPU, network, disk I/O, status checks |
-| EC2 detailed monitoring | 1 minute, paid | Same metrics, faster. Adds nothing new |
-| Custom metric, standard resolution | 1 minute | Published with `PutMetricData` |
-| Custom metric, high resolution | Down to 1 second | Supports alarms on 10- or 30-second periods |
-| CloudWatch agent | You configure it | In-guest memory, disk space, swap, processes, plus log files |
+| Source                             | Interval         | Notes                                                        |
+| ---------------------------------- | ---------------- | ------------------------------------------------------------ |
+| EC2 standard monitoring            | 5 minutes, free  | Hypervisor view: CPU, network, disk I/O, status checks       |
+| EC2 detailed monitoring            | 1 minute, paid   | Same metrics, faster. Adds nothing new                       |
+| Custom metric, standard resolution | 1 minute         | Published with `PutMetricData`                               |
+| Custom metric, high resolution     | Down to 1 second | Supports alarms on 10- or 30-second periods                  |
+| CloudWatch agent                   | You configure it | In-guest memory, disk space, swap, processes, plus log files |
 
 - **Top trap:** memory and free disk space are never in the default EC2 metrics. "Memory metrics missing" means install the CloudWatch agent. Keep its JSON config in Parameter Store and roll it out with Systems Manager.
 - **Containers:** Container Insights collects cluster, service, task, and pod data for ECS and EKS. Prometheus-format metrics go to Amazon Managed Service for Prometheus, visualized in Managed Grafana. Lambda publishes its own metrics with no agent.
@@ -44,10 +44,10 @@ This domain is about seeing what production is doing and acting on it: collectin
   - **CloudTrail correlation** finds change-caused incidents: CloudWatch shows when it broke, CloudTrail shows what changed. The fix is often reverting the change.
 - **Status checks map to different fixes:**
 
-| Failed check | Meaning | Fix |
-|---|---|---|
-| `StatusCheckFailed_System` | AWS host problem: power, network, hardware | Alarm with the **recover** action, or stop/start |
-| `StatusCheckFailed_Instance` | Inside your OS: memory exhausted, corrupt filesystem, bad kernel or network config | Reboot or repair the OS. Recovery does not help |
+| Failed check                 | Meaning                                                                            | Fix                                              |
+| ---------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `StatusCheckFailed_System`   | AWS host problem: power, network, hardware                                         | Alarm with the **recover** action, or stop/start |
+| `StatusCheckFailed_Instance` | Inside your OS: memory exhausted, corrupt filesystem, bad kernel or network config | Reboot or repair the OS. Recovery does not help  |
 
 - **Recover** keeps the instance ID, private and Elastic IPs, and EBS volumes, but loses in-memory data.
 - **Auto Scaling replaces, it does not repair.** Right for stateless fleets, wrong for a stateful single instance. Add the ELB health check type so a failing app counts as unhealthy.
@@ -78,13 +78,13 @@ This domain is about seeing what production is doing and acting on it: collectin
 - **T-family credit trap:** a service slows after sustained load or at the same busy hour daily. Look at `CPUCreditBalance` falling to zero. Unlimited mode suits occasional overruns (surplus is billed); a constantly busy box belongs on M or C.
 - **EBS:**
 
-| Type | Model | Use |
-|---|---|---|
-| gp3 | 3,000 IOPS and 125 MiB/s baseline at any size; IOPS and throughput raised separately from capacity | Default for boot and general use |
-| gp2 | Baseline tied to size (3 IOPS/GiB); small volumes burst on credits | Legacy. Migrate to gp3 |
-| io1/io2 | Provisioned IOPS SSD, consistent latency | Databases needing sustained IOPS beyond gp3 |
-| st1 | Throughput HDD | Large sequential I/O. Not bootable |
-| sc1 | Cold HDD, cheapest | Rarely read sequential data. Not bootable |
+| Type    | Model                                                                                              | Use                                         |
+| ------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| gp3     | 3,000 IOPS and 125 MiB/s baseline at any size; IOPS and throughput raised separately from capacity | Default for boot and general use            |
+| gp2     | Baseline tied to size (3 IOPS/GiB); small volumes burst on credits                                 | Legacy. Migrate to gp3                      |
+| io1/io2 | Provisioned IOPS SSD, consistent latency                                                           | Databases needing sustained IOPS beyond gp3 |
+| st1     | Throughput HDD                                                                                     | Large sequential I/O. Not bootable          |
+| sc1     | Cold HDD, cheapest                                                                                 | Rarely read sequential data. Not bootable   |
 
 - **Burst exhaustion signature:** `BurstBalance` drops to 0% as `VolumeQueueLength` climbs. Fix live with **Elastic Volumes** (change gp2 to gp3 while attached, no downtime).
 - **Second ceiling:** each instance type has its own aggregate EBS limit. Healthy volume metrics plus slow storage means a bigger instance, not a faster volume.
